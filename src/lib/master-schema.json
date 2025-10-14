@@ -1,0 +1,872 @@
+{
+  "platform": {
+    "exams": [
+      {
+        "id": "pte",
+        "name": "PTE",
+        "description": "Pearson Test of English Academic",
+        "sections": [
+          {
+            "id": "speaking",
+            "name": "Speaking",
+            "order": 1,
+            "questionTypes": [
+              {
+                "id": "read_aloud",
+                "name": "Read Aloud",
+                "inputFormat": "audio",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": 40,
+                  "difficultyLevels": ["beginner", "intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "pte_speaking_read_aloud_1",
+                    "text": "The Museum of Contemporary Art in Sydney is one of the most important museums in Australia. It was opened in 1991 and has since become a major cultural institution. The museum's collection includes works by both Australian and international artists.",
+                    "media": null,
+                    "metadata": { 
+                      "timeLimit": 40,
+                      "difficulty": "beginner",
+                      "wordCount": 45
+                    }
+                  },
+                  {
+                    "id": "pte_speaking_read_aloud_2",
+                    "text": "Climate change is one of the most pressing issues facing our planet today. Scientists around the world are working to understand its causes and effects, while policymakers debate the best strategies for reducing greenhouse gas emissions. The consequences of inaction could be severe and long-lasting.",
+                    "media": null,
+                    "metadata": { 
+                      "timeLimit": 45,
+                      "difficulty": "intermediate",
+                      "wordCount": 52
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "repeat_sentence",
+                "name": "Repeat Sentence",
+                "inputFormat": "audio",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": 5,
+                  "difficultyLevels": ["beginner", "intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "pte_speaking_repeat_sentence_1",
+                    "text": "The train arrives at the station at 3:45 PM.",
+                    "media": null,
+                    "metadata": { 
+                      "timeLimit": 5,
+                      "difficulty": "beginner",
+                      "wordCount": 9
+                    }
+                  },
+                  {
+                    "id": "pte_speaking_repeat_sentence_2",
+                    "text": "The economic growth of developing countries has accelerated significantly over the past decade.",
+                    "media": null,
+                    "metadata": { 
+                      "timeLimit": 7,
+                      "difficulty": "intermediate",
+                      "wordCount": 15
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "describe_image",
+                "name": "Describe Image",
+                "inputFormat": "audio",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": 40,
+                  "difficultyLevels": ["intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "pte_speaking_describe_image_1",
+                    "text": "A bar chart showing the percentage of people who use different modes of transport in a city over a 10-year period.",
+                    "media": {
+                      "id": "media_1",
+                      "type": "image",
+                      "url": "/images/transport-chart.png",
+                      "metadata": { 
+                        "size": "200kb", 
+                        "format": "png",
+                        "description": "Bar chart of transport usage"
+                      }
+                    },
+                    "metadata": { 
+                      "timeLimit": 40,
+                      "difficulty": "intermediate"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "re_tell_lecture",
+                "name": "Re-tell Lecture",
+                "inputFormat": "audio",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": 40,
+                  "difficultyLevels": ["intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "pte_speaking_re_tell_lecture_1",
+                    "text": "You will hear a lecture about climate change. After listening, you will have 40 seconds to retell the lecture in your own words.",
+                    "media": {
+                      "id": "media_2",
+                      "type": "audio",
+                      "url": "/audio/climate-change-lecture.mp3",
+                      "metadata": { 
+                        "duration": "90s", 
+                        "format": "mp3",
+                        "description": "Lecture on climate change"
+                      }
+                    },
+                    "metadata": { 
+                      "timeLimit": 40,
+                      "difficulty": "intermediate"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "answer_short_question",
+                "name": "Answer Short Question",
+                "inputFormat": "audio",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": 3,
+                  "difficultyLevels": ["beginner", "intermediate"]
+                },
+                "questions": [
+                  {
+                    "id": "pte_speaking_answer_short_question_1",
+                    "text": "What is the capital of Australia?",
+                    "media": null,
+                    "metadata": { 
+                      "timeLimit": 3,
+                      "difficulty": "beginner"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "writing",
+            "name": "Writing",
+            "order": 2,
+            "questionTypes": [
+              {
+                "id": "summarize_written_text",
+                "name": "Summarize Written Text",
+                "inputFormat": "text",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": 10,
+                  "wordLimit": "5-75",
+                  "difficultyLevels": ["intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "pte_writing_summarize_written_text_1",
+                    "text": "The global population is expected to reach 9.7 billion by 2050, putting immense pressure on food production systems. To address this challenge, scientists are developing innovative agricultural technologies, including genetically modified crops, precision farming techniques, and vertical farming systems. These technologies aim to increase crop yields while reducing environmental impact. However, critics argue that genetically modified organisms may have unforeseen consequences for human health and biodiversity.",
+                    "media": null,
+                    "metadata": { 
+                      "timeLimit": 10,
+                      "wordLimit": "5-75",
+                      "difficulty": "intermediate",
+                      "wordCount": 85
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "write_essay",
+                "name": "Write Essay",
+                "inputFormat": "text",
+                "scoringType": "ai+manual",
+                "metadata": {
+                  "timeLimit": 20,
+                  "wordLimit": "200-300",
+                  "difficultyLevels": ["intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "pte_writing_write_essay_1",
+                    "text": "Some people believe that technology has made our lives more complex and stressful, while others think it has simplified and improved our lives. Discuss both views and give your own opinion.",
+                    "media": null,
+                    "metadata": { 
+                      "timeLimit": 20,
+                      "wordLimit": "200-300",
+                      "difficulty": "advanced"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "reading",
+            "name": "Reading",
+            "order": 3,
+            "questionTypes": [
+              {
+                "id": "multiple_choice_single",
+                "name": "Multiple Choice (Single Answer)",
+                "inputFormat": "text",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": null,
+                  "difficultyLevels": ["beginner", "intermediate"]
+                },
+                "questions": [
+                  {
+                    "id": "pte_reading_multiple_choice_single_1",
+                    "text": "Read the passage and choose the correct answer.",
+                    "media": null,
+                    "passage": "Renewable energy is energy that is collected from renewable resources, which are naturally replenished on a human timescale, such as sunlight, wind, rain, tides, waves, and geothermal heat. Renewable energy often provides energy in four important areas: electricity generation, air and water heating/cooling, transportation, and rural (off-grid) energy services.",
+                    "questions": [
+                      {
+                        "id": "pte_reading_mc_1_1",
+                        "text": "What is renewable energy?",
+                        "options": [
+                          "A) Energy from fossil fuels",
+                          "B) Energy from non-renewable resources", 
+                          "C) Energy from resources that naturally replenish",
+                          "D) Energy from nuclear power"
+                        ],
+                        "correctAnswer": "C) Energy from resources that naturally replenish",
+                        "explanation": "The passage states that renewable energy is 'collected from renewable resources, which are naturally replenished on a human timescale'."
+                      }
+                    ],
+                    "metadata": { 
+                      "difficulty": "beginner"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "re_order_paragraphs",
+                "name": "Re-order Paragraphs",
+                "inputFormat": "text",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": null,
+                  "difficultyLevels": ["intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "pte_reading_re_order_paragraphs_1",
+                    "text": "The text boxes in the left panel have been placed in a random order. Restore the original order by dragging the text boxes into the correct positions.",
+                    "media": null,
+                    "paragraphs": [
+                      {
+                        "id": "p1",
+                        "text": "The Industrial Revolution, which began in Britain in the late 18th century, marked a major turning point in history. Almost every aspect of daily life was influenced in some way."
+                      },
+                      {
+                        "id": "p2",
+                        "text": "Most especially, it led to the emergence of unprecedented levels of population growth and urbanization."
+                      },
+                      {
+                        "id": "p3",
+                        "text": "This period saw the development of new manufacturing processes, the construction of extensive railroad networks, and significant advances in agriculture."
+                      },
+                      {
+                        "id": "p4",
+                        "text": "The Industrial Revolution fundamentally changed the way goods were produced and consumed, shifting from manual labor to machine-based manufacturing."
+                      }
+                    ],
+                    "correctOrder": ["p4", "p1", "p3", "p2"],
+                    "metadata": { 
+                      "difficulty": "intermediate"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "listening",
+            "name": "Listening",
+            "order": 4,
+            "questionTypes": [
+              {
+                "id": "summarize_spoken_text",
+                "name": "Summarize Spoken Text",
+                "inputFormat": "text",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": 600,
+                  "wordLimit": "50-70",
+                  "difficultyLevels": ["advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "pte_listening_summarize_spoken_text_1",
+                    "text": "You will hear a lecture about renewable energy. After listening, you will have 10 minutes to summarize the lecture in 50-70 words.",
+                    "media": {
+                      "id": "media_3",
+                      "type": "audio",
+                      "url": "/audio/renewable-energy-lecture.mp3",
+                      "metadata": { 
+                        "duration": "120s", 
+                        "format": "mp3",
+                        "description": "Lecture on renewable energy"
+                      }
+                    },
+                    "metadata": { 
+                      "timeLimit": 600,
+                      "wordLimit": "50-70",
+                      "difficulty": "advanced"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "fill_in_blanks",
+                "name": "Fill in the Blanks",
+                "inputFormat": "text",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": null,
+                  "difficultyLevels": ["intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "pte_listening_fill_in_blanks_1",
+                    "text": "You will hear a conversation about university life. Type the missing words as you hear them.",
+                    "media": {
+                      "id": "media_4",
+                      "type": "audio",
+                      "url": "/audio/university-life-conversation.mp3",
+                      "metadata": { 
+                        "duration": "60s", 
+                        "format": "mp3",
+                        "description": "Conversation about university life"
+                      }
+                    },
+                    "passage": "Student: I'm really enjoying my _______ at university, but I'm finding it quite _______ to balance my studies with part-time work.\nAdvisor: That's completely _______. Many students face the same _______. I'd recommend creating a _______ schedule to help you manage your time more _______.",
+                    "correctAnswers": ["studies", "challenging", "understandable", "challenge", "weekly", "effectively"],
+                    "metadata": { 
+                      "difficulty": "intermediate"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ielts",
+        "name": "IELTS",
+        "description": "International English Language Testing System",
+        "sections": [
+          {
+            "id": "speaking",
+            "name": "Speaking",
+            "order": 1,
+            "questionTypes": [
+              {
+                "id": "part_1_introduction",
+                "name": "Part 1 - Introduction",
+                "inputFormat": "audio",
+                "scoringType": "ai+manual",
+                "metadata": {
+                  "timeLimit": null,
+                  "difficultyLevels": ["beginner", "intermediate"]
+                },
+                "questions": [
+                  {
+                    "id": "ielts_speaking_part_1_introduction_1",
+                    "text": "Let's talk about your studies. What subject are you studying? Why did you choose this subject? Do you enjoy your studies? What do you like most about it?",
+                    "media": null,
+                    "metadata": { 
+                      "difficulty": "beginner"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "part_2_cue_card",
+                "name": "Part 2 - Cue Card",
+                "inputFormat": "audio",
+                "scoringType": "ai+manual",
+                "metadata": {
+                  "timeLimit": 120,
+                  "difficultyLevels": ["intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "ielts_speaking_part_2_cue_card_1",
+                    "text": "Describe a memorable journey you have taken. You should say: where you went, when you went there, who you went with, what you did, and explain why this journey was memorable for you.",
+                    "media": null,
+                    "metadata": { 
+                      "timeLimit": 120,
+                      "difficulty": "intermediate"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "part_3_discussion",
+                "name": "Part 3 - Discussion",
+                "inputFormat": "audio",
+                "scoringType": "ai+manual",
+                "metadata": {
+                  "timeLimit": null,
+                  "difficultyLevels": ["advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "ielts_speaking_part_3_discussion_1",
+                    "text": "Let's discuss travel and tourism. Why do you think people like to travel to other countries? What are the benefits of international travel? How has air travel changed over the past few decades?",
+                    "media": null,
+                    "metadata": { 
+                      "difficulty": "advanced"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "writing",
+            "name": "Writing",
+            "order": 2,
+            "questionTypes": [
+              {
+                "id": "task_1_academic",
+                "name": "Task 1 - Graph Description",
+                "inputFormat": "text",
+                "scoringType": "ai+manual",
+                "metadata": {
+                  "timeLimit": 20,
+                  "wordLimit": "150+",
+                  "difficultyLevels": ["intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "ielts_writing_task_1_academic_1",
+                    "text": "The chart below shows the amount of money per week spent on fast foods in Britain. The graph shows trends in consumption of fast foods.",
+                    "media": {
+                      "id": "media_5",
+                      "type": "image",
+                      "url": "/images/fast-food-chart.png",
+                      "metadata": { 
+                        "size": "250kb", 
+                        "format": "png",
+                        "description": "Fast food consumption chart"
+                      }
+                    },
+                    "metadata": { 
+                      "timeLimit": 20,
+                      "wordLimit": "150+",
+                      "difficulty": "intermediate"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "task_2_essay",
+                "name": "Task 2 - Essay Writing",
+                "inputFormat": "text",
+                "scoringType": "ai+manual",
+                "metadata": {
+                  "timeLimit": 40,
+                  "wordLimit": "250+",
+                  "difficultyLevels": ["intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "ielts_writing_task_2_essay_1",
+                    "text": "Some people think that parents should teach children how to be good members of society. Others, however, believe that school is the place to learn this. Discuss both these views and give your own opinion.",
+                    "media": null,
+                    "metadata": { 
+                      "timeLimit": 40,
+                      "wordLimit": "250+",
+                      "difficulty": "advanced"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "reading",
+            "name": "Reading",
+            "order": 3,
+            "questionTypes": [
+              {
+                "id": "multiple_choice",
+                "name": "Multiple Choice",
+                "inputFormat": "text",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": null,
+                  "difficultyLevels": ["beginner", "intermediate"]
+                },
+                "questions": [
+                  {
+                    "id": "ielts_reading_multiple_choice_1",
+                    "text": "Read the passage about renewable energy and choose the correct answer from A, B, C, or D.",
+                    "media": null,
+                    "passage": "Renewable energy is energy that is collected from renewable resources, which are naturally replenished on a human timescale, such as sunlight, wind, rain, tides, waves, and geothermal heat. Renewable energy often provides energy in four important areas: electricity generation, air and water heating/cooling, transportation, and rural (off-grid) energy services.",
+                    "questions": [
+                      {
+                        "id": "ielts_reading_mc_1_1",
+                        "text": "What is renewable energy?",
+                        "options": [
+                          "A) Energy from fossil fuels",
+                          "B) Energy from non-renewable resources", 
+                          "C) Energy from resources that naturally replenish",
+                          "D) Energy from nuclear power"
+                        ],
+                        "correctAnswer": "C) Energy from resources that naturally replenish",
+                        "explanation": "The passage states that renewable energy is 'collected from renewable resources, which are naturally replenished on a human timescale'."
+                      },
+                      {
+                        "id": "ielts_reading_mc_1_2",
+                        "text": "Which of the following is NOT mentioned as a source of renewable energy?",
+                        "options": [
+                          "A) Sunlight",
+                          "B) Wind",
+                          "C) Nuclear power",
+                          "D) Geothermal heat"
+                        ],
+                        "correctAnswer": "C) Nuclear power",
+                        "explanation": "The passage mentions sunlight, wind, and geothermal heat as sources of renewable energy, but does not mention nuclear power."
+                      }
+                    ],
+                    "metadata": { 
+                      "difficulty": "beginner"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "true_false_not_given",
+                "name": "True/False/Not Given",
+                "inputFormat": "text",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": null,
+                  "difficultyLevels": ["intermediate", "advanced"]
+                },
+                "questions": [
+                  {
+                    "id": "ielts_reading_true_false_not_given_1",
+                    "text": "Read the passage about climate change and determine whether the following statements are True, False, or Not Given according to the information in the text.",
+                    "media": null,
+                    "passage": "Climate change refers to long-term shifts in global or regional climate patterns. Since the mid-20th century, scientists have observed unprecedented changes in Earth's climate, primarily attributed to increased levels of greenhouse gases produced by human activities such as burning fossil fuels, deforestation, and industrial processes. The consequences of climate change include rising sea levels, extreme weather events, and disruptions to ecosystems.",
+                    "questions": [
+                      {
+                        "id": "ielts_reading_tfng_1_1",
+                        "text": "Climate change has been observed since the mid-20th century.",
+                        "correctAnswer": "TRUE",
+                        "explanation": "The passage explicitly states that scientists have observed unprecedented changes in Earth's climate 'since the mid-20th century'."
+                      },
+                      {
+                        "id": "ielts_reading_tfng_1_2",
+                        "text": "Climate change is entirely caused by natural factors.",
+                        "correctAnswer": "FALSE",
+                        "explanation": "The passage states that climate changes are 'primarily attributed to increased levels of greenhouse gases produced by human activities', which contradicts the statement."
+                      },
+                      {
+                        "id": "ielts_reading_tfng_1_3",
+                        "text": "The Paris Agreement was signed to combat climate change.",
+                        "correctAnswer": "NOT GIVEN",
+                        "explanation": "While the Paris Agreement is a real international treaty, it is not mentioned in the passage."
+                      }
+                    ],
+                    "metadata": { 
+                      "difficulty": "intermediate"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "listening",
+            "name": "Listening",
+            "order": 4,
+            "questionTypes": [
+              {
+                "id": "multiple_choice",
+                "name": "Multiple Choice",
+                "inputFormat": "text",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": null,
+                  "difficultyLevels": ["beginner", "intermediate"]
+                },
+                "questions": [
+                  {
+                    "id": "ielts_listening_multiple_choice_1",
+                    "text": "You will hear a conversation between a student and a university administrator about enrolling in a course. Choose the correct answer from A, B, or C.",
+                    "media": {
+                      "id": "media_6",
+                      "type": "audio",
+                      "url": "/audio/enrollment-conversation.mp3",
+                      "metadata": { 
+                        "duration": "120s", 
+                        "format": "mp3",
+                        "description": "Enrollment conversation"
+                      }
+                    },
+                    "questions": [
+                      {
+                        "id": "ielts_listening_mc_1_1",
+                        "text": "What course is the student interested in?",
+                        "options": [
+                          "A) Computer Science",
+                          "B) Business Administration", 
+                          "C) Engineering"
+                        ],
+                        "correctAnswer": "B) Business Administration",
+                        "explanation": "The student specifically mentions wanting to study Business Administration."
+                      },
+                      {
+                        "id": "ielts_listening_mc_1_2",
+                        "text": "When does the course start?",
+                        "options": [
+                          "A) January",
+                          "B) March",
+                          "C) September"
+                        ],
+                        "correctAnswer": "C) September",
+                        "explanation": "The administrator mentions the course begins in September."
+                      }
+                    ],
+                    "metadata": { 
+                      "difficulty": "beginner"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "form_completion",
+                "name": "Form Completion",
+                "inputFormat": "text",
+                "scoringType": "ai",
+                "metadata": {
+                  "timeLimit": null,
+                  "wordLimit": "NO MORE THAN TWO WORDS AND/OR A NUMBER",
+                  "difficultyLevels": ["intermediate"]
+                },
+                "questions": [
+                  {
+                    "id": "ielts_listening_form_completion_1",
+                    "text": "You will hear a conversation between a student and a housing officer about student accommodation. Complete the form using NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+                    "media": {
+                      "id": "media_7",
+                      "type": "audio",
+                      "url": "/audio/accommodation-conversation.mp3",
+                      "metadata": { 
+                        "duration": "180s", 
+                        "format": "mp3",
+                        "description": "Accommodation conversation"
+                      }
+                    },
+                    "questions": [
+                      {
+                        "id": "ielts_listening_fc_1_1",
+                        "text": "Name: _______________",
+                        "answer": "Sarah Johnson",
+                        "wordLimit": "NO MORE THAN TWO WORDS AND/OR A NUMBER"
+                      },
+                      {
+                        "id": "ielts_listening_fc_1_2",
+                        "text": "Student ID: _______________",
+                        "answer": "S20234567",
+                        "wordLimit": "NO MORE THAN TWO WORDS AND/OR A NUMBER"
+                      },
+                      {
+                        "id": "ielts_listening_fc_1_3",
+                        "text": "Course: _______________",
+                        "answer": "Psychology",
+                        "wordLimit": "NO MORE THAN TWO WORDS AND/OR A NUMBER"
+                      }
+                    ],
+                    "metadata": { 
+                      "difficulty": "intermediate"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "media": [
+      {
+        "id": "media_1",
+        "type": "image",
+        "url": "/images/transport-chart.png",
+        "metadata": { 
+          "size": "200kb", 
+          "format": "png",
+          "description": "Bar chart of transport usage"
+        }
+      },
+      {
+        "id": "media_2",
+        "type": "audio",
+        "url": "/audio/climate-change-lecture.mp3",
+        "metadata": { 
+          "duration": "90s", 
+          "format": "mp3",
+          "description": "Lecture on climate change"
+        }
+      },
+      {
+        "id": "media_3",
+        "type": "audio",
+        "url": "/audio/renewable-energy-lecture.mp3",
+        "metadata": { 
+          "duration": "120s", 
+          "format": "mp3",
+          "description": "Lecture on renewable energy"
+        }
+      },
+      {
+        "id": "media_4",
+        "type": "audio",
+        "url": "/audio/university-life-conversation.mp3",
+        "metadata": { 
+          "duration": "60s", 
+          "format": "mp3",
+          "description": "Conversation about university life"
+        }
+      },
+      {
+        "id": "media_5",
+        "type": "image",
+        "url": "/images/fast-food-chart.png",
+        "metadata": { 
+          "size": "250kb", 
+          "format": "png",
+          "description": "Fast food consumption chart"
+        }
+      },
+      {
+        "id": "media_6",
+        "type": "audio",
+        "url": "/audio/enrollment-conversation.mp3",
+        "metadata": { 
+          "duration": "120s", 
+          "format": "mp3",
+          "description": "Enrollment conversation"
+        }
+      },
+      {
+        "id": "media_7",
+        "type": "audio",
+        "url": "/audio/accommodation-conversation.mp3",
+        "metadata": { 
+          "duration": "180s", 
+          "format": "mp3",
+          "description": "Accommodation conversation"
+        }
+      }
+    ],
+    "users": [
+      {
+        "id": "user_1",
+        "name": "John Doe",
+        "email": "john@example.com",
+        "progress": {
+          "pte": {
+            "speaking": {
+              "completed": 2,
+              "score": 78
+            }
+          },
+          "ielts": {
+            "writing": {
+              "completed": 1,
+              "score": 82
+            }
+          }
+        }
+      },
+      {
+        "id": "user_2",
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "progress": {
+          "pte": {
+            "reading": {
+              "completed": 3,
+              "score": 85
+            }
+          },
+          "ielts": {
+            "listening": {
+              "completed": 2,
+              "score": 75
+            }
+          }
+        }
+      }
+    ],
+    "attempts": [
+      {
+        "id": "attempt_1",
+        "userId": "user_1",
+        "examId": "pte",
+        "questionId": "pte_speaking_read_aloud_1",
+        "answer": {
+          "text": null,
+          "media": {
+            "id": "media_8",
+            "type": "audio",
+            "url": "/audio/user_1_read_aloud_1.mp3",
+            "metadata": { 
+              "duration": "15s",
+              "format": "mp3"
+            }
+          }
+        },
+        "aiScore": 85,
+        "manualScore": null,
+        "feedback": "Good fluency, improve pronunciation",
+        "createdAt": "2025-08-20T10:00:00Z"
+      },
+      {
+        "id": "attempt_2",
+        "userId": "user_1",
+        "examId": "ielts",
+        "questionId": "ielts_writing_task_2_essay_1",
+        "answer": {
+          "text": "The question of whether parents or schools should be responsible for teaching children to be good members of society is a complex one. Both institutions play crucial roles in a child's development, and I believe that effective social education requires the cooperation of both.\n\nParents are a child's first teachers and have the most significant influence during the formative years. Children learn values, behavior patterns, and social skills primarily through observation and imitation of their parents. The home environment provides consistent, personalized guidance that can be tailored to each child's personality and needs. Moreover, parents can instill core values such as honesty, respect, and empathy through daily interactions and family traditions.\n\nOn the other hand, schools provide a structured environment where children learn to interact with peers from diverse backgrounds. This setting offers opportunities to practice social skills, develop teamwork abilities, and understand societal rules and expectations. Teachers can provide objective guidance and expose children to different perspectives and social norms.\n\nIn my opinion, both parents and schools are essential for developing well-rounded individuals. Parents provide the foundation of values and emotional support, while schools offer the opportunity to apply these values in a broader social context. The most effective approach is one where parents and educators work together to ensure consistent messaging and reinforcement of positive social behaviors.",
+          "media": null
+        },
+        "aiScore": 80,
+        "manualScore": 82,
+        "feedback": "Well-structured essay with good arguments. Improve vocabulary variety in conclusion.",
+        "createdAt": "2025-08-20T11:30:00Z"
+      }
+    ],
+    "settings": {
+      "scoring": {
+        "ai": true,
+        "manualOverride": true
+      },
+      "ui": {
+        "theme": "light",
+        "language": "en"
+      }
+    }
+  }
+}
