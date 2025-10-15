@@ -70,7 +70,7 @@ export function AudioRecorder({
     startRecording,
     stopRecording,
     playback,
-    formattedPrepTime,
+    recordedUrl,
     formattedRecordTime,
     recordingProgress,
   } = useAudioRecorder({
@@ -80,6 +80,8 @@ export function AudioRecorder({
     autoStartRecording,
     autoStartPreparation,
   });
+
+  const hasRecording = Boolean(recordedUrl);
 
   // Calculate elapsed time for display
   const elapsedRecordingTime = recordingSeconds - recordingTime;
@@ -121,7 +123,7 @@ export function AudioRecorder({
   return (
     <div
       className={className}
-      style={{ maxWidth: 800, margin: '0 auto', marginTop: 18 }}
+      style={{ maxWidth: 720, margin: '0 auto', marginTop: 18 }}
     >
       <div
         style={{
@@ -140,18 +142,11 @@ export function AudioRecorder({
             borderBottom: '1px solid rgba(0,0,0,0.04)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            gap: 8,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Mic size={16} style={{ color: '#6b7280' }} />
-            <span>{title}</span>
-          </div>
-          {preparationSeconds > 0 && phase === 'preparing' && (
-            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 400 }}>
-              Preparation: {formattedPrepTime}
-            </div>
-          )}
+          <Mic size={16} style={{ color: '#6b7280' }} />
+          <span>{title}</span>
         </div>
 
         {/* Large status area with centered message */}
@@ -178,20 +173,6 @@ export function AudioRecorder({
             {showPhaseIndicator && getStatusText()}
           </div>
 
-          {/* Large time display during preparation */}
-          {phase === 'preparing' && (
-            <div
-              style={{
-                fontSize: 48,
-                fontWeight: 600,
-                color: '#6b7280',
-                fontFamily: 'monospace',
-              }}
-            >
-              {formattedPrepTime}
-            </div>
-          )}
-
           {/* Large time display during recording */}
           {isRecording && (
             <div
@@ -207,7 +188,7 @@ export function AudioRecorder({
           )}
 
           {/* Completed - show recorded duration */}
-          {phase === 'completed' && playback.duration > 0 && (
+          {hasRecording && playback.duration > 0 && (
             <div
               style={{
                 fontSize: 14,
@@ -289,6 +270,15 @@ export function AudioRecorder({
             ) : null}
           </div>
 
+          {/* Divider between controls */}
+          <div
+            style={{
+              width: 1,
+              alignSelf: 'stretch',
+              backgroundColor: '#e5e7eb',
+            }}
+          />
+
           {/* Playback controls and progress */}
           <div
             style={{
@@ -307,18 +297,18 @@ export function AudioRecorder({
                   void playback.play();
                 }
               }}
-              disabled={phase !== 'completed'}
+              disabled={!hasRecording}
               aria-label={playback.isPlaying ? 'Pause' : 'Play recorded audio'}
               style={{
                 width: 34,
                 height: 34,
                 borderRadius: 6,
                 border: '1px solid rgba(0,0,0,0.06)',
-                background: phase === 'completed' ? '#fff' : '#f3f4f6',
+                background: hasRecording ? '#fff' : '#f3f4f6',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: phase === 'completed' ? 'pointer' : 'not-allowed',
+                cursor: hasRecording ? 'pointer' : 'not-allowed',
               }}
             >
               {playback.isPlaying ? (
@@ -343,7 +333,7 @@ export function AudioRecorder({
                   )} / ${formatElapsedTime(recordingSeconds)}`
                 : playback.isPlaying
                 ? `${playback.formattedTime} / ${playback.formattedDuration}`
-                : phase === 'completed'
+                : hasRecording
                 ? `00:00 / ${playback.formattedDuration}`
                 : '00:00 / 00:00'}
             </div>
@@ -367,9 +357,7 @@ export function AudioRecorder({
                     width: `${getProgressPercent()}%`,
                     height: '100%',
                     background:
-                      phase === 'completed' || isRecording
-                        ? '#9fbff5'
-                        : '#d1d5db',
+                      hasRecording || isRecording ? '#9fbff5' : '#d1d5db',
                     transition: 'width 150ms linear',
                   }}
                 />

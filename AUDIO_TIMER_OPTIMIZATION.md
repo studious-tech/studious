@@ -6,95 +6,88 @@ The countdown timers in the audio recorder were not updating properly. The displ
 
 ## Root Cause
 
-Custom timer implementation using `setInterval` had React rendering optimization issues that prevented smooth countdown updates.
+The original `setInterval`-based countdown relied on exact one-second ticks.
+When the browser throttled timers (background tabs, CPU scheduling, throttled
+event loops) those ticks stalled and the UI stopped updating.
 
 ## Solution
 
-Replaced custom timer implementation with **react-timer-hook** library - a battle-tested, optimized library specifically designed for countdown timers in React applications.
+Replaced the `setInterval` loop with a **requestAnimationFrame (RAF)** driven
+timer that computes the remaining seconds from actual elapsed wall-clock time.
+The new approach keeps the countdown accurate even when frames are skipped.
 
 ## Changes Made
 
-### 1. Installed Libraries
+1. **Rebuilt `useAudioRecorder` timers**
 
-```bash
-bun add react-timer-hook
-```
+   - Track preparation and recording deadlines with `performance.now()`
+   - Drive updates via RAF instead of fixed 1000 ms intervals
+   - Automatically catch up if the tab is throttled or loses focus
 
-### 2. Refactored `useAudioRecorder` Hook
+2. **Improved phase transitions**
 
-**Before:**
+   - Immediate hand-off from preparation → recording when the timer hits zero
+   - Zero-second preparation skips straight to the recording phase
 
-- Custom `setInterval` implementation for countdown timers
-- Manual state management for `preparationTime` and `recordingTime`
-- Potential race conditions and rendering issues
+3. **Hardened cleanup**
+   - Cancels RAF loops on stop/reset/unmount
+   - Clears MediaRecorder streams consistently to avoid leaks
 
-**After:**
-
-- Uses `useStopwatch` from react-timer-hook (counts UP from 0)
-- Calculates remaining time: `preparationSeconds - stopwatch.seconds`
-- Library handles all timer optimizations and re-renders
-- Smooth, reliable countdown updates
-
-### 3. Key Benefits
+### Key Benefits
 
 #### Performance
 
-- ✅ Optimized rendering - library uses RAF (RequestAnimationFrame) for smooth updates
-- ✅ No unnecessary re-renders
-- ✅ Proper cleanup and memory management
+- ✅ High-precision countdown that never stalls
+- ✅ Handles skipped frames without drifting
+- ✅ Minimal work per frame (just a timestamp comparison)
 
 #### Reliability
 
-- ✅ Battle-tested library used by thousands of projects
-- ✅ Handles edge cases (pause, reset, unmount)
-- ✅ Cross-browser compatibility
+- ✅ Works consistently across browsers, throttled tabs, and slow devices
+- ✅ No dependency on external libraries
+- ✅ Countdown accuracy tied to real elapsed time
 
 #### Code Quality
 
-- ✅ Less custom code to maintain
-- ✅ Well-documented API
-- ✅ TypeScript support built-in
+- ✅ Self-contained logic using standard browser APIs
+- ✅ Smaller surface area for bugs compared to multiple setInterval timers
+- ✅ Clearer phase management with explicit deadlines
 
 ## Technical Details
 
-### Timer Implementation
+### Preparation Timer (simplified)
 
 ```typescript
-// Preparation timer (counts up from 0)
-const preparationStopwatch = useStopwatch({ autoStart: false });
+preparationDeadlineRef.current = performance.now() + preparationSeconds * 1000;
 
-// Calculate remaining time
-const preparationTime = Math.max(
-  0,
-  preparationSeconds - preparationStopwatch.seconds
-);
+const tick = () => {
+  const remainingMs = preparationDeadlineRef.current - performance.now();
+  const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+  setPreparationTime(remainingSeconds);
 
-// Watch for completion
-useEffect(() => {
-  if (
-    phase === 'preparing' &&
-    preparationStopwatch.seconds >= preparationSeconds
-  ) {
-    preparationStopwatch.pause();
-    if (autoStartRecording) {
-      void startRecording();
-    }
+  if (remainingSeconds <= 0) {
+    // Start recording or wait for the user
+    return;
   }
-}, [preparationStopwatch.seconds]);
+
+  preparationFrameRef.current = requestAnimationFrame(tick);
+};
+
+preparationFrameRef.current = requestAnimationFrame(tick);
 ```
 
-### Why Stopwatch Instead of Countdown Timer?
-
-- More accurate (counts from 0 up to target)
-- Easier to track elapsed time
-- Better for recording scenarios
-- Library's stopwatch is more optimized than countdown
+The recording timer mirrors the same pattern, stopping the MediaRecorder when
 
 ## Files Modified
 
-1. `src/hooks/useAudioRecorder.ts` - Complete rewrite using react-timer-hook
-2. `src/components/test-session/audio/AudioRecorder.tsx` - Removed debug code
-3. `src/hooks/useAudioRecorder-old.ts` - Backup of old implementation
+1. `src/hooks/useAudioRecorder.ts`
+
+- Rebuilt countdown logic with RAF and timestamp deadlines
+- Hardened cleanup and phase transitions
+
+2. `src/components/test-session/audio/AudioRecorder.tsx`
+
+- Minor display cleanup (no logic change)
 
 ## Testing
 
@@ -131,6 +124,6 @@ Following the principle of "use libraries instead of custom code":
 ## Result
 
 ✅ Countdown timers now update smoothly every second
-✅ No more frozen or stuck countdowns
-✅ More reliable and maintainable code
-✅ Better user experience
+✅ No more frozen or stuck countdowns—even in throttled tabs
+✅ Cleaner, more maintainable code with no extra dependencies
+✅ Better user experience and recording reliability

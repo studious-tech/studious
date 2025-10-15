@@ -8,7 +8,6 @@ import QuestionTypes from '@/components/sections/pte/landing/question-types';
 import { Testimonials } from '@/components/sections/pte/landing/testimonials';
 import { Pricing } from '@/components/sections/pte/landing/pricing';
 import Faq from '@/components/sections/pte/landing/faq';
-import ExamStructure from '@/components/sections/landing/exam-structure';
 
 export default function PTELandingPage() {
   return (
@@ -17,7 +16,6 @@ export default function PTELandingPage() {
       <main>
         <HeroSection />
         <Features />
-        <ExamStructure examId="pte-academic" />
         <QuestionTypes />
         <Testimonials />
         <Pricing />

@@ -368,9 +368,15 @@ export function DashboardContent({
           </Card>
         )}
 
-        {/* Stats Row */}
+        {/* Stats Row with Interactive Elements and Subtle Indicators */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border">
+          <div 
+            className="bg-white dark:bg-gray-900 rounded-lg p-3 border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            onClick={() => {
+              setActiveView('history');
+              window.history.pushState({}, '', `/${examId}/dashboard?tab=history`);
+            }}
+          >
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs text-gray-600">Total Tests</span>
               <BookOpen className="h-4 w-4 text-gray-400" />
@@ -378,11 +384,23 @@ export function DashboardContent({
             <div className="text-2xl font-bold">
               {management.userSessions.length}
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 mt-1">
               {completedSessions} completed
             </div>
+            <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+              <div 
+                className="bg-gray-500 h-1.5 rounded-full" 
+                style={{ width: `${Math.min(100, (management.userSessions.length / 20) * 10)}%` }}
+              ></div>
+            </div>
           </div>
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border">
+          <div 
+            className="bg-white dark:bg-gray-900 rounded-lg p-3 border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            onClick={() => {
+              setActiveView('history');
+              window.history.pushState({}, '', `/${examId}/dashboard?tab=history`);
+            }}
+          >
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs text-gray-600">Avg Score</span>
               <TrendingUp className="h-4 w-4 text-green-600" />
@@ -390,11 +408,22 @@ export function DashboardContent({
             <div className="text-2xl font-bold text-green-600">
               {Math.round(averageScore)}%
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 mt-1">
               {completedSessions > 0 ? '+2% this week' : 'No data yet'}
             </div>
+            <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+              <div 
+                className="bg-green-500 h-1.5 rounded-full" 
+                style={{ width: `${Math.min(100, averageScore)}%` }}
+              ></div>
+            </div>
           </div>
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border">
+          <div 
+            className="bg-white dark:bg-gray-900 rounded-lg p-3 border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            onClick={() => {
+              setActiveView('overview'); // Keep on overview but scroll to activity section
+            }}
+          >
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs text-gray-600">Streak</span>
               <Zap className="h-4 w-4 text-orange-600" />
@@ -402,8 +431,14 @@ export function DashboardContent({
             <div className="text-2xl font-bold text-orange-600">
               {currentStreak}
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 mt-1">
               day{currentStreak !== 1 ? 's' : ''} active
+            </div>
+            <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+              <div 
+                className="bg-orange-500 h-1.5 rounded-full" 
+                style={{ width: `${Math.min(100, currentStreak > 0 ? currentStreak * 5 : 0)}%` }}
+              ></div>
             </div>
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border">
@@ -420,33 +455,42 @@ export function DashboardContent({
             <div className="text-xs text-gray-500 mt-1">
               {isSubscribed ? 'Active' : '5 tests limit'}
             </div>
+            <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+              <div 
+                className="bg-amber-500 h-1.5 rounded-full" 
+                style={{ width: isSubscribed ? '100%' : '30%' }}
+              ></div>
+            </div>
           </div>
         </div>
 
         {/* Charts */}
-        {chartData.length > 0 && <PerformanceCharts data={chartData} />}
+        {chartData.length > 2 && <PerformanceCharts data={chartData} />}
 
         {/* Courses Section */}
         <CoursesSection examId={examId} isCompact={true} />
 
         {/* Activity & Quick Actions Row */}
-        <div className="grid md:grid-cols-2 gap-4">
-          {/* Activity Calendar */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ActivityCalendar activities={activityData} />
-            </CardContent>
-          </Card>
+        <div className="flex gap-4">
+          {/* Activity Calendar - takes 2/3 width on all screen sizes */}
+          <div className="w-2/3">
+            <Card className="h-full">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ActivityCalendar activities={activityData} />
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
+          {/* Quick Actions - takes 1/3 width on all screen sizes */}
+          <div className="w-1/3">
+            <Card className="h-full">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
               <Button
                 className="w-full justify-start h-auto py-3"
                 onClick={() => {
@@ -499,7 +543,8 @@ export function DashboardContent({
                 View All Tests
               </Button>
             </CardContent>
-          </Card>
+            </Card>
+          </div>
         </div>
 
         {/* In Progress & Recent Results */}

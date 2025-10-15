@@ -6,9 +6,9 @@
  *
  * Features:
  * - Phase management (idle → preparing → recording → completed)
- * - Preparation countdown timer (using react-timer-hook for optimized updates)
- * - Recording countdown timer (using react-timer-hook for optimized updates)
- * - MediaRecorder management (using react-media-recorder for reliability)
+ * - High-precision preparation countdown timer (RAF-based)
+ * - High-precision recording countdown timer (RAF-based)
+ * - MediaRecorder management
  * - Playback of recorded audio
  * - Auto cleanup
  * - Error handling
@@ -130,19 +130,36 @@ export function useAudioRecorder(
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState(false);
-  const [, forceUpdate] = useState(0); // Force update mechanism
 
   // Refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const preparationTimerRef = useRef<number | null>(null);
-  const recordingTimerRef = useRef<number | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const preparationDeadlineRef = useRef<number | null>(null);
+  const preparationFrameRef = useRef<number | null>(null);
+  const recordingDeadlineRef = useRef<number | null>(null);
+  const recordingFrameRef = useRef<number | null>(null);
 
   // Playback hook for recorded audio
   const playbackControls = useAudioPlayback({
     audioUrl: recordedUrl,
   });
+
+  // Create hidden audio element for playback
+  useEffect(() => {
+    if (!playbackControls.audioRef.current && typeof window !== 'undefined') {
+      const audio = document.createElement('audio');
+      audio.preload = 'auto';
+      if (recordedUrl) {
+        audio.src = recordedUrl;
+      }
+      (
+        playbackControls.audioRef as React.MutableRefObject<HTMLAudioElement>
+      ).current = audio;
+    } else if (playbackControls.audioRef.current && recordedUrl) {
+      playbackControls.audioRef.current.src = recordedUrl;
+    }
+  }, [recordedUrl, playbackControls.audioRef]);
 
   // Computed
   const formattedPrepTime = formatTime(preparationTime);
@@ -162,18 +179,9 @@ export function useAudioRecorder(
     [onPhaseChange]
   );
 
-  // Start preparation phase
-  const startPreparation = useCallback(() => {
-    if (phase === 'completed') return; // Don't restart if already completed
-
-    updatePhase('preparing');
-    setPreparationTime(preparationSeconds);
-    setError(null);
-  }, [phase, preparationSeconds, updatePhase]);
-
   // Stop recording
   const stopRecording = useCallback(() => {
-    if (!mediaRecorderRef.current || !isRecording) return;
+    if (!mediaRecorderRef.current) return;
 
     try {
       // Stop MediaRecorder
@@ -187,23 +195,30 @@ export function useAudioRecorder(
 
       setIsRecording(false);
 
-      // Clear recording timer
-      if (recordingTimerRef.current) {
-        window.clearInterval(recordingTimerRef.current);
-        recordingTimerRef.current = null;
+      // Clear recording countdown animation
+      if (recordingFrameRef.current !== null) {
+        window.cancelAnimationFrame(recordingFrameRef.current);
+        recordingFrameRef.current = null;
       }
+      recordingDeadlineRef.current = null;
     } catch (err) {
       console.error('Error stopping recording:', err);
       setError('Failed to stop recording');
     }
-  }, [isRecording]);
+  }, []);
 
   // Start recording
   const startRecording = useCallback(async () => {
-    if (phase === 'completed' || isRecording) return;
+    if (phase === 'completed' || isRecording || recordedBlob) return;
 
     try {
       setError(null);
+
+      if (recordingFrameRef.current !== null) {
+        window.cancelAnimationFrame(recordingFrameRef.current);
+        recordingFrameRef.current = null;
+      }
+      recordingDeadlineRef.current = null;
 
       // Request microphone permission
       const stream = await requestMicrophonePermission();
@@ -224,6 +239,7 @@ export function useAudioRecorder(
 
       // Handle data available
       mediaRecorder.ondataavailable = (event) => {
+        console.log('Data available:', event.data.size, 'bytes');
         if (event.data && event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
@@ -231,12 +247,28 @@ export function useAudioRecorder(
 
       // Handle recording stop
       mediaRecorder.onstop = () => {
+        console.log(
+          'MediaRecorder stopped. Chunks collected:',
+          audioChunksRef.current.length
+        );
+
+        if (audioChunksRef.current.length === 0) {
+          console.error('No audio chunks collected');
+          setError('No audio data recorded');
+          updatePhase('completed');
+          stopMediaStream(mediaStreamRef.current);
+          mediaStreamRef.current = null;
+          return;
+        }
+
         const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        console.log('Created blob:', { size: blob.size, type: blob.type });
 
         // Validate blob
         if (validateAudioBlob(blob)) {
           // Create URL for playback
           const url = URL.createObjectURL(blob);
+          console.log('Created URL for playback:', url);
           setRecordedBlob(blob);
           setRecordedUrl(url);
           updatePhase('completed');
@@ -244,6 +276,7 @@ export function useAudioRecorder(
           // Call completion callback
           onRecordingComplete?.(blob);
         } else {
+          console.error('Audio blob validation failed');
           setError('No audio recorded');
           updatePhase('completed');
         }
@@ -262,10 +295,18 @@ export function useAudioRecorder(
       };
 
       // Start recording
+      console.log('Starting MediaRecorder with mimeType:', mimeType);
       mediaRecorder.start(100); // Collect data every 100ms
       setIsRecording(true);
       setRecordingTime(maxRecordingSeconds);
+      recordingDeadlineRef.current =
+        performance.now() + maxRecordingSeconds * 1000;
       updatePhase('recording');
+      console.log(
+        'Recording started, deadline set for',
+        maxRecordingSeconds,
+        'seconds'
+      );
     } catch (err) {
       console.error('Error starting recording:', err);
       if (err instanceof Error) {
@@ -278,8 +319,60 @@ export function useAudioRecorder(
   }, [
     phase,
     isRecording,
+    recordedBlob,
     maxRecordingSeconds,
     onRecordingComplete,
+    updatePhase,
+  ]);
+
+  // Start preparation phase
+  const startPreparation = useCallback(() => {
+    console.log(
+      'startPreparation called, phase:',
+      phase,
+      'recordedBlob:',
+      !!recordedBlob
+    );
+    if (phase === 'completed' || recordedBlob) {
+      console.log('Blocked: already completed or has recording');
+      return; // Don't restart automatically once we have a recording
+    }
+
+    // Cancel any existing countdown
+    if (preparationFrameRef.current !== null) {
+      window.cancelAnimationFrame(preparationFrameRef.current);
+      preparationFrameRef.current = null;
+    }
+    preparationDeadlineRef.current = null;
+
+    setError(null);
+
+    if (preparationSeconds <= 0) {
+      setPreparationTime(0);
+      if (autoStartRecording) {
+        console.log('No preparation time, starting recording immediately');
+        void startRecording();
+      } else {
+        updatePhase('idle');
+      }
+      return;
+    }
+
+    console.log(
+      'Starting preparation phase, setting timer for',
+      preparationSeconds,
+      'seconds'
+    );
+    setPreparationTime(preparationSeconds);
+    updatePhase('preparing');
+    preparationDeadlineRef.current =
+      performance.now() + preparationSeconds * 1000;
+  }, [
+    phase,
+    recordedBlob,
+    preparationSeconds,
+    autoStartRecording,
+    startRecording,
     updatePhase,
   ]);
 
@@ -290,15 +383,17 @@ export function useAudioRecorder(
       stopRecording();
     }
 
-    // Clear timers
-    if (preparationTimerRef.current) {
-      window.clearInterval(preparationTimerRef.current);
-      preparationTimerRef.current = null;
+    // Clear countdown animations
+    if (preparationFrameRef.current !== null) {
+      window.cancelAnimationFrame(preparationFrameRef.current);
+      preparationFrameRef.current = null;
     }
-    if (recordingTimerRef.current) {
-      window.clearInterval(recordingTimerRef.current);
-      recordingTimerRef.current = null;
+    if (recordingFrameRef.current !== null) {
+      window.cancelAnimationFrame(recordingFrameRef.current);
+      recordingFrameRef.current = null;
     }
+    preparationDeadlineRef.current = null;
+    recordingDeadlineRef.current = null;
 
     // Revoke URL
     if (recordedUrl) {
@@ -325,87 +420,157 @@ export function useAudioRecorder(
   // Preparation countdown timer
   useEffect(() => {
     if (phase !== 'preparing') {
-      if (preparationTimerRef.current) {
-        window.clearInterval(preparationTimerRef.current);
-        preparationTimerRef.current = null;
+      if (preparationFrameRef.current !== null) {
+        window.cancelAnimationFrame(preparationFrameRef.current);
+        preparationFrameRef.current = null;
+      }
+      preparationDeadlineRef.current = null;
+      return;
+    }
+
+    if (recordedBlob) {
+      // Already have a completed recording; do not auto restart
+      console.log(
+        'Preparation effect: Already has recording, moving to completed'
+      );
+      updatePhase('completed');
+      return;
+    }
+
+    console.log('Preparation effect: Starting countdown');
+
+    if (preparationSeconds <= 0) {
+      setPreparationTime(0);
+      if (autoStartRecording) {
+        void startRecording();
+      } else {
+        updatePhase('idle');
       }
       return;
     }
 
-    // Start countdown
-    preparationTimerRef.current = window.setInterval(() => {
-      setPreparationTime((prev) => {
-        const newValue = prev - 1;
+    if (preparationDeadlineRef.current === null) {
+      preparationDeadlineRef.current =
+        performance.now() + preparationSeconds * 1000;
+      setPreparationTime(preparationSeconds);
+    }
 
-        if (newValue <= 0) {
-          // Preparation done
-          if (preparationTimerRef.current) {
-            window.clearInterval(preparationTimerRef.current);
-            preparationTimerRef.current = null;
-          }
+    const tick = () => {
+      const deadline = preparationDeadlineRef.current;
+      if (!deadline) {
+        return;
+      }
 
-          // Auto-start recording if enabled
-          if (autoStartRecording) {
-            void startRecording();
-          } else {
-            updatePhase('idle'); // Wait for manual start
-          }
+      const remainingMs = deadline - performance.now();
+      const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
 
-          return 0;
+      setPreparationTime(remainingSeconds);
+
+      if (remainingSeconds <= 0) {
+        preparationFrameRef.current = null;
+        preparationDeadlineRef.current = null;
+
+        if (autoStartRecording) {
+          void startRecording();
+        } else {
+          updatePhase('idle');
         }
+        return;
+      }
 
-        // Force component re-render
-        forceUpdate((n) => n + 1);
-        return newValue;
-      });
-    }, 1000);
+      preparationFrameRef.current = window.requestAnimationFrame(tick);
+    };
+
+    preparationFrameRef.current = window.requestAnimationFrame(tick);
 
     return () => {
-      if (preparationTimerRef.current) {
-        window.clearInterval(preparationTimerRef.current);
-        preparationTimerRef.current = null;
+      if (preparationFrameRef.current !== null) {
+        window.cancelAnimationFrame(preparationFrameRef.current);
+        preparationFrameRef.current = null;
       }
     };
-  }, [phase, autoStartRecording, startRecording, updatePhase]);
+  }, [
+    phase,
+    recordedBlob,
+    preparationSeconds,
+    autoStartRecording,
+    startRecording,
+    updatePhase,
+  ]);
 
   // Recording countdown timer
   useEffect(() => {
     if (!isRecording) {
-      if (recordingTimerRef.current) {
-        window.clearInterval(recordingTimerRef.current);
-        recordingTimerRef.current = null;
+      if (recordingFrameRef.current !== null) {
+        window.cancelAnimationFrame(recordingFrameRef.current);
+        recordingFrameRef.current = null;
       }
+      recordingDeadlineRef.current = null;
       return;
     }
 
-    // Start countdown
-    recordingTimerRef.current = window.setInterval(() => {
-      setRecordingTime((prev) => {
-        const newValue = prev - 1;
+    if (maxRecordingSeconds <= 0) {
+      setRecordingTime(0);
+      stopRecording();
+      return;
+    }
 
-        if (newValue <= 0) {
-          // Time's up - stop recording
-          stopRecording();
-          return 0;
-        }
+    if (recordingDeadlineRef.current === null) {
+      recordingDeadlineRef.current =
+        performance.now() + maxRecordingSeconds * 1000;
+      setRecordingTime(maxRecordingSeconds);
+    }
 
-        // Force component re-render
-        forceUpdate((n) => n + 1);
-        return newValue;
-      });
-    }, 1000);
+    const tick = () => {
+      const deadline = recordingDeadlineRef.current;
+      if (!deadline) {
+        return;
+      }
+
+      const remainingMs = deadline - performance.now();
+      const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+
+      setRecordingTime(remainingSeconds);
+
+      if (remainingSeconds <= 0) {
+        recordingFrameRef.current = null;
+        recordingDeadlineRef.current = null;
+        stopRecording();
+        return;
+      }
+
+      recordingFrameRef.current = window.requestAnimationFrame(tick);
+    };
+
+    recordingFrameRef.current = window.requestAnimationFrame(tick);
 
     return () => {
-      if (recordingTimerRef.current) {
-        window.clearInterval(recordingTimerRef.current);
-        recordingTimerRef.current = null;
+      if (recordingFrameRef.current !== null) {
+        window.cancelAnimationFrame(recordingFrameRef.current);
+        recordingFrameRef.current = null;
       }
     };
-  }, [isRecording, stopRecording]);
+  }, [isRecording, maxRecordingSeconds, stopRecording]);
 
   // Auto-start preparation on mount if requested
   useEffect(() => {
-    if (autoStartPreparation && phase === 'idle' && preparationSeconds > 0) {
+    console.log(
+      'Auto-start effect, autoStartPreparation:',
+      autoStartPreparation,
+      'phase:',
+      phase,
+      'preparationSeconds:',
+      preparationSeconds,
+      'recordedBlob:',
+      !!recordedBlob
+    );
+    if (
+      autoStartPreparation &&
+      phase === 'idle' &&
+      preparationSeconds > 0 &&
+      !recordedBlob
+    ) {
+      console.log('Auto-starting preparation');
       startPreparation();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -430,12 +595,16 @@ export function useAudioRecorder(
       stopMediaStream(mediaStreamRef.current);
 
       // Clear timers
-      if (preparationTimerRef.current) {
-        window.clearInterval(preparationTimerRef.current);
+      if (preparationFrameRef.current !== null) {
+        window.cancelAnimationFrame(preparationFrameRef.current);
+        preparationFrameRef.current = null;
       }
-      if (recordingTimerRef.current) {
-        window.clearInterval(recordingTimerRef.current);
+      if (recordingFrameRef.current !== null) {
+        window.cancelAnimationFrame(recordingFrameRef.current);
+        recordingFrameRef.current = null;
       }
+      preparationDeadlineRef.current = null;
+      recordingDeadlineRef.current = null;
     };
   }, []);
 
