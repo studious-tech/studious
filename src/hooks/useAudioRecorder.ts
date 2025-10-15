@@ -336,7 +336,7 @@ export function useAudioRecorder(
     preparationTimerRef.current = window.setInterval(() => {
       setPreparationTime((prev) => {
         const newValue = prev - 1;
-        
+
         if (newValue <= 0) {
           // Preparation done
           if (preparationTimerRef.current) {
@@ -353,7 +353,7 @@ export function useAudioRecorder(
 
           return 0;
         }
-        
+
         // Force component re-render
         forceUpdate((n) => n + 1);
         return newValue;
@@ -382,13 +382,13 @@ export function useAudioRecorder(
     recordingTimerRef.current = window.setInterval(() => {
       setRecordingTime((prev) => {
         const newValue = prev - 1;
-        
+
         if (newValue <= 0) {
           // Time's up - stop recording
           stopRecording();
           return 0;
         }
-        
+
         // Force component re-render
         forceUpdate((n) => n + 1);
         return newValue;
