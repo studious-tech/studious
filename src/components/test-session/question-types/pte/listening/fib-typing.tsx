@@ -9,10 +9,8 @@ import React, {
   useRef,
   useEffect,
 } from 'react';
-import { Play, Pause, Volume2, RotateCcw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AudioPlayer } from '@/components/test-session/audio/AudioPlayer';
 import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
 import { getMediaUrl } from '@/lib/media-utils';
 
 interface Blank {
@@ -107,19 +105,20 @@ export type FIBTypingRef = {
 };
 
 const FIBTyping = forwardRef<FIBTypingRef, Props>(
-  ({ question, onResponse, onSubmit, currentResponse }, ref) => {
+  ({ question, onResponse, onSubmit }, ref) => {
     const blanksConfig = question.question.blanks_config;
     const content = question.question.content || '';
-    const audioRef = useRef<HTMLAudioElement>(null);
 
     // Find audio media
     const audioMedia = question.question.media.find(
       (m) => m.role === 'audio' || m.media.fileType === 'audio'
     );
+    const audioUrl = audioMedia ? getMediaUrl(audioMedia.media.id) : null;
 
     // Initialize answers - always start fresh
     const [answers, setAnswers] = useState<Record<string, string>>({});
 
+    // Ref for debouncing saves
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Cleanup on unmount - clear timeout
@@ -130,13 +129,6 @@ const FIBTyping = forwardRef<FIBTypingRef, Props>(
         }
       };
     }, []);
-
-    // Audio state
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
-    const [playCount, setPlayCount] = useState(0);
-    const maxPlays = blanksConfig?.max_plays || 999; // Unlimited by default
 
     // Get blank config by ID
     const getBlankConfig = useCallback(
@@ -229,68 +221,6 @@ const FIBTyping = forwardRef<FIBTypingRef, Props>(
       [saveResponseDebounced]
     );
 
-    // Audio event handlers
-    useEffect(() => {
-      const audio = audioRef.current;
-      if (!audio) return;
-
-      const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
-      const handleLoadedMetadata = () => setDuration(audio.duration);
-      const handleEnded = () => {
-        setIsPlaying(false);
-        setPlayCount((prev) => prev + 1);
-      };
-      const handlePlay = () => setIsPlaying(true);
-      const handlePause = () => setIsPlaying(false);
-
-      audio.addEventListener('timeupdate', handleTimeUpdate);
-      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.addEventListener('ended', handleEnded);
-      audio.addEventListener('play', handlePlay);
-      audio.addEventListener('pause', handlePause);
-
-      return () => {
-        audio.removeEventListener('timeupdate', handleTimeUpdate);
-        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        audio.removeEventListener('ended', handleEnded);
-        audio.removeEventListener('play', handlePlay);
-        audio.removeEventListener('pause', handlePause);
-      };
-    }, []);
-
-    // Play/pause handler
-    const togglePlayPause = () => {
-      if (!audioRef.current) return;
-
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        if (playCount >= maxPlays) {
-          return; // Max plays reached
-        }
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((error) => {
-            console.error('Audio play failed:', error);
-          });
-        }
-      }
-    };
-
-    // Restart audio
-    const restartAudio = () => {
-      if (!audioRef.current) return;
-      audioRef.current.currentTime = 0;
-      audioRef.current.play();
-    };
-
-    // Format time
-    const formatTime = (seconds: number) => {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
     // Expose methods to parent
     useImperativeHandle(
       ref,
@@ -332,8 +262,8 @@ const FIBTyping = forwardRef<FIBTypingRef, Props>(
             </div>
           )}
 
-          {/* Audio Player - exact copy from describe-image recorder box */}
-          {audioMedia && (
+          {/* Audio Player */}
+          {audioUrl && (
             <div
               style={{
                 marginBottom: 32,
@@ -341,173 +271,13 @@ const FIBTyping = forwardRef<FIBTypingRef, Props>(
                 margin: '0 auto 32px auto',
               }}
             >
-              <div
-                style={{
-                  border: '1px solid rgba(0,0,0,0.08)',
-                  borderRadius: 4,
-                  background: '#fff',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    padding: '12px 14px',
-                    fontWeight: 700,
-                    color: '#374151',
-                  }}
-                >
-                  Audio Player
-                </div>
-
-                {/* large empty area with centered status */}
-                <div
-                  style={{
-                    height: 150,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderTop: '1px solid rgba(0,0,0,0.04)',
-                    background: '#fff',
-                  }}
-                >
-                  <div
-                    style={{
-                      textAlign: 'center',
-                      color: isPlaying ? '#2563eb' : '#6b7280',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {isPlaying
-                      ? `Playing: ${formatTime(currentTime)} / ${formatTime(
-                          duration
-                        )}`
-                      : playCount >= maxPlays
-                      ? 'Maximum plays reached'
-                      : 'Ready to play'}
-                  </div>
-                </div>
-
-                {/* bottom control bar */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    padding: '12px 16px',
-                    background: '#f8f9fa',
-                    borderTop: '1px solid rgba(0,0,0,0.08)',
-                  }}
-                >
-                  {/* Play/Pause button (left) */}
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <button
-                      onClick={togglePlayPause}
-                      disabled={playCount >= maxPlays}
-                      aria-label={isPlaying ? 'Pause' : 'Play'}
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        border: '2px solid #2563eb',
-                        background:
-                          playCount >= maxPlays
-                            ? '#f3f4f6'
-                            : isPlaying
-                            ? '#1d4ed8'
-                            : '#2563eb',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor:
-                          playCount >= maxPlays ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.2s ease',
-                      }}
-                    >
-                      {isPlaying ? (
-                        <Pause className="h-4 w-4" style={{ color: '#fff' }} />
-                      ) : (
-                        <Play
-                          className="h-4 w-4 ml-0.5"
-                          style={{ color: '#fff' }}
-                        />
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Restart button */}
-                  <button
-                    onClick={restartAudio}
-                    disabled={playCount >= maxPlays}
-                    aria-label="Restart"
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: '50%',
-                      border: '2px solid #6b7280',
-                      background: playCount >= maxPlays ? '#f3f4f6' : '#fff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: playCount >= maxPlays ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    <RotateCcw
-                      className="h-4 w-4"
-                      style={{ color: '#6b7280' }}
-                    />
-                  </button>
-
-                  {/* volume icon + progress */}
-                  <div
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                    }}
-                  >
-                    <Volume2 className="h-5 w-5" style={{ color: '#6b7280' }} />
-                    <div style={{ flex: 1 }}>
-                      <Progress
-                        value={(currentTime / duration) * 100 || 0}
-                        className="h-2"
-                      />
-                    </div>
-                  </div>
-
-                  {/* time display */}
-                  <div
-                    style={{
-                      fontSize: 13,
-                      color: '#6b7280',
-                      fontFamily: 'monospace',
-                      minWidth: 80,
-                      textAlign: 'right',
-                    }}
-                  >
-                    {formatTime(currentTime)} / {formatTime(duration)}
-                  </div>
-
-                  {/* play count */}
-                  <div
-                    style={{
-                      fontSize: 13,
-                      color: '#6b7280',
-                      paddingLeft: 12,
-                      borderLeft: '1px solid rgba(0,0,0,0.08)',
-                    }}
-                  >
-                    Plays: {playCount} {maxPlays < 999 ? `/ ${maxPlays}` : ''}
-                  </div>
-                </div>
-
-                <audio
-                  ref={audioRef}
-                  src={getMediaUrl(audioMedia.media.id) || ''}
-                  preload="metadata"
-                />
-              </div>
+              <AudioPlayer
+                audioUrl={audioUrl}
+                maxPlays={blanksConfig?.max_plays || 999}
+                variant="full"
+                showPlayCount={true}
+                title="Audio Player"
+              />
             </div>
           )}
 

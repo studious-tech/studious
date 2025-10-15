@@ -95,9 +95,51 @@ export function SimpleTestSessionInterface({
   const [currentResponseType, setCurrentResponseType] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
   const [questionKey, setQuestionKey] = useState(0); // Force remount
+  const [debugMode, setDebugMode] = useState(false); // Debug panel toggle
 
   const timeSpentRef = useRef(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debug: Track component lifecycle
+  useEffect(() => {
+    console.log('🎬 [TestSession] Component mounted', {
+      sessionId,
+      sessionStatus: session.status,
+    });
+    return () => {
+      console.log('💀 [TestSession] Component will unmount');
+    };
+  }, []);
+
+  // Debug: Track question changes
+  useEffect(() => {
+    console.log('🔄 [TestSession] Question changed:', {
+      questionIndex: currentQuestionIndex,
+      questionKey,
+      currentResponse,
+      currentResponseType,
+    });
+  }, [currentQuestionIndex, questionKey]);
+
+  // Debug: Toggle debug mode with 'D' key
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'd' || e.key === 'D') {
+        if (e.ctrlKey || e.metaKey) {
+          setDebugMode((prev) => {
+            const newMode = !prev;
+            console.log(
+              `🐛 [TestSession] Debug mode ${newMode ? 'ENABLED' : 'DISABLED'}`
+            );
+            toast.info(`Debug mode ${newMode ? 'enabled' : 'disabled'}`);
+            return newMode;
+          });
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   // Fetch session questions
   useEffect(() => {
@@ -156,12 +198,34 @@ export function SimpleTestSessionInterface({
     response: unknown;
     responseType: string;
   }) => {
+    console.log('📝 [TestSession] Response received:', {
+      questionId: response.questionId,
+      sessionQuestionId: response.sessionQuestionId,
+      response: response.response,
+      responseType: response.responseType,
+    });
     setCurrentResponse(response.response);
     setCurrentResponseType(response.responseType);
+    console.log(
+      '✅ [TestSession] Response captured, Next button should be enabled'
+    );
   };
 
   const handleNextQuestion = async () => {
+    console.log('🚀 [TestSession] Next button clicked');
+    console.log('📊 [TestSession] Current state:', {
+      hasSessionData: !!sessionData,
+      currentResponse,
+      currentResponseType,
+      currentQuestionIndex,
+      timeSpent: timeSpentRef.current,
+    });
+
     if (!sessionData || !currentResponse) {
+      console.error('❌ [TestSession] Cannot proceed:', {
+        hasSessionData: !!sessionData,
+        hasResponse: !!currentResponse,
+      });
       toast.error('Please answer the question before proceeding');
       return;
     }
@@ -170,6 +234,10 @@ export function SimpleTestSessionInterface({
 
     try {
       const currentQuestion = sessionData.questions[currentQuestionIndex];
+      console.log(
+        '💾 [TestSession] Saving response for question:',
+        currentQuestion.question.id
+      );
 
       // Determine if response is media (File/Blob)
       const isMediaResponse =
@@ -177,6 +245,7 @@ export function SimpleTestSessionInterface({
 
       if (isMediaResponse) {
         // Upload media first
+        console.log('🎤 [TestSession] Uploading media file...');
         const formData = new FormData();
         formData.append('file', currentResponse as Blob);
         formData.append('role', 'user-response');
@@ -186,18 +255,41 @@ export function SimpleTestSessionInterface({
           body: formData,
         });
 
+        console.log(
+          '📡 [TestSession] Media upload response status:',
+          uploadResponse.status
+        );
+
         if (!uploadResponse.ok) {
-          throw new Error('Failed to upload media');
+          const errorData = await uploadResponse.json();
+          console.error('❌ [TestSession] Media upload failed:', errorData);
+          throw new Error(errorData.error || 'Failed to upload media');
         }
 
         const uploadData = await uploadResponse.json();
-        const mediaId = uploadData.media?.id || uploadData.id;
+        console.log('📦 [TestSession] Media upload response:', uploadData);
+
+        // API returns media_id field
+        const mediaId = uploadData.media_id;
 
         if (!mediaId) {
+          console.error(
+            '❌ [TestSession] No media_id in response:',
+            uploadData
+          );
           throw new Error('Media upload succeeded but no media ID returned');
         }
 
+        console.log(
+          '✅ [TestSession] Media uploaded successfully, ID:',
+          mediaId
+        );
+
         // Save response with media ID
+        console.log('💾 [TestSession] Saving media response:', {
+          mediaId,
+          timeSpent: timeSpentRef.current,
+        });
         const saveResponse = await fetch(
           `/api/test-sessions/${sessionId}/questions/${currentQuestion.question.id}/response`,
           {
@@ -213,11 +305,27 @@ export function SimpleTestSessionInterface({
           }
         );
 
+        console.log(
+          '📡 [TestSession] API response status:',
+          saveResponse.status
+        );
+        const saveResult = await saveResponse.json();
+        console.log('📡 [TestSession] API response body:', saveResult);
+
         if (!saveResponse.ok) {
-          throw new Error('Failed to save response');
+          console.error('❌ [TestSession] Save failed:', saveResult);
+          throw new Error(saveResult.error || 'Failed to save response');
         }
+
+        console.log('✅ [TestSession] Media response saved successfully');
       } else {
         // Save regular response
+        console.log('💾 [TestSession] Saving regular response:', {
+          response: currentResponse,
+          responseType: currentResponseType,
+          timeSpent: timeSpentRef.current,
+        });
+
         const saveResponse = await fetch(
           `/api/test-sessions/${sessionId}/questions/${currentQuestion.question.id}/response`,
           {
@@ -233,32 +341,63 @@ export function SimpleTestSessionInterface({
           }
         );
 
+        console.log(
+          '📡 [TestSession] API response status:',
+          saveResponse.status
+        );
+        const saveResult = await saveResponse.json();
+        console.log('📡 [TestSession] API response body:', saveResult);
+
         if (!saveResponse.ok) {
-          throw new Error('Failed to save response');
+          console.error('❌ [TestSession] Save failed:', saveResult);
+          throw new Error(saveResult.error || 'Failed to save response');
         }
+
+        console.log('✅ [TestSession] Regular response saved successfully');
       }
 
       // Reset for next question
+      console.log('🔄 [TestSession] Resetting state for next question');
       setCurrentResponse(null);
       setCurrentResponseType('');
       timeSpentRef.current = 0;
 
       // Check if this was the last question
-      if (currentQuestionIndex >= sessionData.totalQuestions - 1) {
+      const isLastQuestion =
+        currentQuestionIndex >= sessionData.totalQuestions - 1;
+      console.log('🏁 [TestSession] Is last question?', isLastQuestion);
+
+      if (isLastQuestion) {
+        console.log(
+          '🎉 [TestSession] This was the last question, finishing test'
+        );
         await handleFinishTest();
       } else {
         // Move to next question and force remount
-        setCurrentQuestionIndex((prev) => prev + 1);
-        setQuestionKey((prev) => prev + 1);
+        const nextIndex = currentQuestionIndex + 1;
+        const nextKey = questionKey + 1;
+        console.log('➡️ [TestSession] Moving to next question:', {
+          from: currentQuestionIndex,
+          to: nextIndex,
+          newKey: nextKey,
+        });
+
+        setCurrentQuestionIndex(nextIndex);
+        setQuestionKey(nextKey);
         toast.success('Answer saved!');
       }
     } catch (error) {
-      console.error('Error saving response:', error);
+      console.error('❌ [TestSession] Error saving response:', error);
+      console.error('❌ [TestSession] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       toast.error(
         error instanceof Error ? error.message : 'Failed to save answer'
       );
     } finally {
       setIsSaving(false);
+      console.log('🔓 [TestSession] Save operation complete, isSaving = false');
     }
   };
 
@@ -367,6 +506,50 @@ export function SimpleTestSessionInterface({
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
+      {/* Debug Panel - Press Ctrl+D or Cmd+D to toggle */}
+      {debugMode && (
+        <div className="fixed top-20 right-4 bg-black/95 text-white p-4 rounded-lg shadow-2xl z-50 max-w-sm text-xs font-mono">
+          <div className="font-bold text-green-400 mb-2">
+            🐛 DEBUG MODE (Ctrl/Cmd+D to hide)
+          </div>
+          <div className="space-y-1">
+            <div className="text-blue-300">Session ID: {sessionId}</div>
+            <div className="text-yellow-300">
+              Question: {currentQuestionIndex + 1}/{sessionData.totalQuestions}
+            </div>
+            <div className="text-purple-300">Question Key: {questionKey}</div>
+            <div className="border-t border-gray-700 my-2"></div>
+            <div
+              className={currentResponse ? 'text-green-400' : 'text-red-400'}
+            >
+              Has Response: {currentResponse ? 'YES' : 'NO'}
+            </div>
+            {currentResponse && (
+              <div className="text-gray-400 text-[10px] max-h-20 overflow-auto">
+                Response: {JSON.stringify(currentResponse)}
+              </div>
+            )}
+            <div className="text-gray-400">
+              Type: {currentResponseType || 'N/A'}
+            </div>
+            <div className="border-t border-gray-700 my-2"></div>
+            <div className={canProceed ? 'text-green-400' : 'text-red-400'}>
+              Can Proceed: {canProceed ? 'YES' : 'NO'}
+            </div>
+            <div className={isSaving ? 'text-yellow-400' : 'text-gray-400'}>
+              Saving: {isSaving ? 'YES' : 'NO'}
+            </div>
+            <div className="text-gray-400">
+              Time Spent: {timeSpentRef.current}s
+            </div>
+            <div className="border-t border-gray-700 my-2"></div>
+            <div className="text-gray-400 text-[10px]">
+              Check browser console for detailed logs
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Simple Header */}
       <TestSessionHeader
         session={session}
