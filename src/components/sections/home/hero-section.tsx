@@ -75,6 +75,7 @@ export default function HeroSection() {
                         <Button
                           aria-label="submit"
                           className="rounded-(--radius)"
+                          type="submit"
                         >
                           <span className="hidden md:block">Get Started</span>
                           <SendHorizonal
@@ -86,8 +87,22 @@ export default function HeroSection() {
                     </div>
                   </form>
                   <p className="mt-3 text-sm text-muted-foreground text-center lg:text-left">
-                    Join 100,000+ students who improved their test scores
+                    🎉 Join 100,000+ students • ⚡ Start in 30 seconds • 🆓 No credit card
                   </p>
+                </div>
+
+                {/* Trust Indicators */}
+                <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
+                  <p className="text-xs text-muted-foreground mb-4 text-center lg:text-left">
+                    Trusted by students from top universities worldwide
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-8 opacity-50">
+                    <div className="text-sm font-semibold">Harvard</div>
+                    <div className="text-sm font-semibold">Stanford</div>
+                    <div className="text-sm font-semibold">MIT</div>
+                    <div className="text-sm font-semibold">Oxford</div>
+                    <div className="text-sm font-semibold">Cambridge</div>
+                  </div>
                 </div>
               </div>
             </div>

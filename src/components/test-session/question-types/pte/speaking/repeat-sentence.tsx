@@ -262,6 +262,11 @@ export default function PTESpeakingRepeatSentence({
 
   // Preparation countdown
   useEffect(() => {
+    // Don't restart if already completed
+    if (isCompleted) {
+      return;
+    }
+
     if (phase === 'preparing') {
       // Clear any existing timer first
       if (preparationTimerRef.current) {
@@ -295,7 +300,7 @@ export default function PTESpeakingRepeatSentence({
         preparationTimerRef.current = null;
       }
     };
-  }, [phase, question.sessionQuestionId]);
+  }, [phase, question.sessionQuestionId, isCompleted]);
 
   // Auto-start recording when phase becomes 'recording'
   useEffect(() => {

@@ -165,7 +165,11 @@ export default function PTESpeakingReadAloud({
             p.remove();
           });
 
-          // Call onResponse to save the blob
+          // Store the blob but DON'T call onResponse yet
+          // onResponse will be called when Next button is clicked
+          audioChunksRef.current = [blob]; // Store for later
+
+          // Call onResponse IMMEDIATELY to enable Next button
           onResponse({
             questionId: questionData.id,
             sessionQuestionId: question.sessionQuestionId,
@@ -199,6 +203,11 @@ export default function PTESpeakingReadAloud({
 
   // Preparation countdown
   useEffect(() => {
+    // Don't restart if already completed
+    if (isCompleted) {
+      return;
+    }
+
     if (phase === 'preparing') {
       // Clear any existing timer first
       if (preparationTimerRef.current) {
@@ -232,7 +241,7 @@ export default function PTESpeakingReadAloud({
         preparationTimerRef.current = null;
       }
     };
-  }, [phase, question.sessionQuestionId]);
+  }, [phase, question.sessionQuestionId, isCompleted]);
 
   // Auto-start recording when phase becomes 'recording'
   useEffect(() => {

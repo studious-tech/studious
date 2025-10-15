@@ -43,6 +43,7 @@ import { DataTable } from '@/components/admin/data-table/data-table';
 import { createTestSessionColumns } from '@/components/test-session/test-session-columns';
 import { ActivityCalendar } from './activity-calendar';
 import { PerformanceCharts } from './performance-charts';
+import CoursesSection from '../dashboard/courses-section';
 
 interface DashboardContentProps {
   examId: string;
@@ -424,6 +425,9 @@ export function DashboardContent({
 
         {/* Charts */}
         {chartData.length > 0 && <PerformanceCharts data={chartData} />}
+
+        {/* Courses Section */}
+        <CoursesSection examId={examId} isCompact={true} />
 
         {/* Activity & Quick Actions Row */}
         <div className="grid md:grid-cols-2 gap-4">

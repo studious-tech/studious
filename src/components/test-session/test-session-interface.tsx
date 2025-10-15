@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TestSession } from '@/types/test-session';
 import { QuestionRenderer } from './question-renderer';
-import { TestSessionHeader } from './test-session-header';
+import { EnhancedTestSessionHeader } from './enhanced-test-session-header';
 import { TestSessionNavigation } from './test-session-navigation';
+import { ScratchNotepad } from './scratch-notepad';
+import { KeyboardShortcutsGuide } from './keyboard-shortcuts-guide';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
 
@@ -93,6 +95,8 @@ export function TestSessionInterface({
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [isPaused, setIsPaused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [flaggedQuestions, setFlaggedQuestions] = useState<Set<string>>(new Set());
+  const [showNotepad, setShowNotepad] = useState(false);
 
   const timeSpentRef = useRef(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -428,9 +432,19 @@ export function TestSessionInterface({
     if (!sessionData) return;
 
     const currentQuestion = sessionData.questions[currentQuestionIndex];
-    toast.info(
-      `Question ${currentQuestion.sequenceNumber + 1} flagged for review`
-    );
+    const questionId = currentQuestion.sessionQuestionId;
+
+    setFlaggedQuestions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(questionId)) {
+        newSet.delete(questionId);
+        toast.info(`Question ${currentQuestion.sequenceNumber + 1} unflagged`);
+      } else {
+        newSet.add(questionId);
+        toast.info(`Question ${currentQuestion.sequenceNumber + 1} flagged for review`);
+      }
+      return newSet;
+    });
   };
 
   const handlePauseSession = () => {
@@ -533,18 +547,23 @@ export function TestSessionInterface({
     },
   };
 
+  const currentIsFlagged = flaggedQuestions.has(currentQuestion.sessionQuestionId);
+
   return (
     <div
       className={`test-session-interface ${examId} flex flex-col min-h-screen bg-gray-50`}
     >
-      {/* Minimal Header */}
-      <TestSessionHeader
+      {/* Enhanced Header with flagging and time warnings */}
+      <EnhancedTestSessionHeader
         session={session}
         currentQuestionIndex={currentQuestionIndex}
         totalQuestions={sessionData.totalQuestions}
         examId={examId}
         timeSpent={timeSpent}
         isPaused={isPaused}
+        isFlagged={currentIsFlagged}
+        onPauseToggle={handlePauseSession}
+        onFlagToggle={handleFlagQuestion}
       />
 
       {/* Main question area - seamless integration */}
@@ -574,6 +593,17 @@ export function TestSessionInterface({
         onRestart={handleRestartSession}
         onFinish={handleFinishTest}
       />
+
+      {/* Scratch Notepad */}
+      <ScratchNotepad
+        sessionId={sessionId}
+        questionId={currentQuestion.question.id}
+      />
+
+      {/* Keyboard Shortcuts Guide - Position in bottom left */}
+      <div className="fixed bottom-4 left-4 z-40">
+        <KeyboardShortcutsGuide />
+      </div>
     </div>
   );
 }

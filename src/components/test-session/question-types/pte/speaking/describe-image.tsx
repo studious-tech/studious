@@ -205,6 +205,11 @@ export default function PTESpeakingDescribeImage({
 
   // Preparation countdown
   useEffect(() => {
+    // Don't restart if already completed
+    if (isCompleted) {
+      return;
+    }
+
     if (isPreparationPhase && preparationTime > 0) {
       preparationTimerRef.current = window.setInterval(() => {
         setPreparationTime((prev) => {
@@ -228,7 +233,7 @@ export default function PTESpeakingDescribeImage({
         preparationTimerRef.current = null;
       }
     };
-  }, [isPreparationPhase, preparationTime, startRecording]);
+  }, [isPreparationPhase, preparationTime, startRecording, isCompleted]);
 
   // Recording countdown
   useEffect(() => {

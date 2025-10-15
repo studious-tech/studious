@@ -319,6 +319,11 @@ export default function PTESpeakingAnswerShortQuestion({
 
   // Preparation countdown
   useEffect(() => {
+    // Don't restart if already completed
+    if (isCompleted) {
+      return;
+    }
+
     if (phase === 'preparing') {
       if (preparationTimerRef.current) {
         window.clearInterval(preparationTimerRef.current);
@@ -350,7 +355,7 @@ export default function PTESpeakingAnswerShortQuestion({
         preparationTimerRef.current = null;
       }
     };
-  }, [phase, question.sessionQuestionId]);
+  }, [phase, question.sessionQuestionId, isCompleted]);
 
   // Auto-start recording when phase becomes 'recording'
   useEffect(() => {

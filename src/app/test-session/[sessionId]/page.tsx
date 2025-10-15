@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { TestSessionInterface } from '@/components/test-session/test-session-interface';
+import { SimpleTestSessionInterface } from '@/components/test-session/simple-test-session-interface';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { AlertCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -124,7 +124,7 @@ export default function TestSessionPage({ params }: { params: Promise<{ sessionI
 
   // Main test session interface
   return (
-    <TestSessionInterface
+    <SimpleTestSessionInterface
       sessionId={unwrappedParams.sessionId}
       session={session}
     />
